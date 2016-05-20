@@ -45,7 +45,7 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
         // 设置Logger
         GYLOG(Log_BootingProtection, @"%@", msg);
     }];
-    FixBlock fixBlock = ^void(BoolCompletionBlock completion) {
+    RepairBlock repairBlock = ^void(BoolCompletionBlock completion) {
         // 修复逻辑
         [self showAlertForFixContinuousCrashOnCompletion:completion];
     };
@@ -57,7 +57,7 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
         // 正常启动逻辑
         return [self swizzled_application:application didFinishLaunchingWithOptions:launchOptions];
     };
-    return [GYBootingProtection launchContinuousCrashProtectWithReportBlock:reportBlock fixBlock:fixBlock completion:completion];
+    return [GYBootingProtection launchContinuousCrashProtectWithReportBlock:reportBlock repairBlock:repairBlock completion:completion];
 }
 
 #pragma mark - 修复启动连续 Crash 逻辑
