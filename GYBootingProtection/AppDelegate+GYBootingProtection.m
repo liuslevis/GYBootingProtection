@@ -6,9 +6,9 @@
 //
 
 #import "AppDelegate+GYBootingProtection.h"
-#import "AppDelegate.h"
-#import "GYBootingProtection.h"
 #import "UIAlertView+Blocks.h"
+#import <objc/runtime.h>
+#import "GYBootingProtection.h"
 
 static NSString *const fixButtonTitle = @"修复";
 static NSString *const cancelFixButtonTitle = @"取消";
@@ -17,19 +17,21 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
 @implementation AppDelegate (GYBootingProtection)
 
 /*
- * TODO 连续闪退检测前需要执行的逻辑，如上报统计初始化
+ * 连续闪退检测前需要执行的逻辑，如上报统计初始化
  */
-- (void)onBeforeBootingProtection {    
+- (void)onBeforeBootingProtection {
+    // TODO
+    
     // 制造 crash 彩蛋
-//    [GYBootingProtection setStartupCrashForTest:YES];
+    [GYBootingProtection setStartupCrashForTest:YES];
     [self showAlertForCreateCrashIfNeeded];
 }
 
 /*
- * TODO 修复完成后的逻辑，比如退出登录
+ * 修复完成后的逻辑，比如退出登录
  */
 - (void)didFinishBootingProtection {
-
+    // TODO
 }
 
 /**
@@ -43,15 +45,15 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
     /* ------- 启动连续闪退保护 ------- */
     [GYBootingProtection setLogger:^(NSString *msg) {
         // 设置Logger
-        GYLOG(Log_BootingProtection, @"%@", msg);
+        NSLog(@"%@", msg);
     }];
     RepairBlock repairBlock = ^void(BoolCompletionBlock completion) {
         // 修复逻辑
         [self showAlertForFixContinuousCrashOnCompletion:completion];
     };
     ReportBlock reportBlock = ^void(NSInteger crashCounts) {
-        // 上报逻辑
-        [[CrashReporter sharedInstance] checkAndUpload];
+        // TODO 上报逻辑
+        
     };
     BoolCompletionBlock completion = ^BOOL() {
         // 正常启动逻辑
@@ -66,17 +68,15 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
  * @param BoolCompletionBlock 无论用户是否修复，最后执行该 block 一次
  */
 - (void)showAlertForFixContinuousCrashOnCompletion:(BoolCompletionBlock)completion {
-    GYLOG(Log_BootingProtection, @"Detect continuous crash %ld times. Prompt user to fix.",  (long)[GYBootingProtection crashCount]);
+    NSLog(@"Detect continuous crash %ld times. Prompt user to fix.",  (long)[GYBootingProtection crashCount]);
     NSString *title = [NSString stringWithFormat:@"提示"];
     NSString *message = @"检测到应用可能已损坏，是否尝试修复？";
-    @weakify(self);
     [UIAlertView showWithTitle:title
                        message:message
              cancelButtonTitle:cancelFixButtonTitle
              otherButtonTitles:@[fixButtonTitle]
                       tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex)
      {
-         @strongify(self);
          if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:cancelFixButtonTitle]) {
              if (completion) completion();
              
@@ -103,8 +103,7 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
                           tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex)
          {
              if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:createCrashButtonTitle]) {
-                 [WRRqdHelper testSignalError];
-                 //                 [WRRqdHelper testNSException];
+                 abort();
              }
          }];
     }
@@ -112,22 +111,11 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
 
 - (void)tryToFixContinuousCrash:(void(^)(void))completion
 {
-    BOOL checkJSPatch = NO;
+    // TODO 可先检查 JSPatch 更新
     
-    if (!checkJSPatch) {
-        [self tryToFixWithLocalLogic];
-        [self didFinishBootingProtection]
-    } else {
-        // 先拉检查 JSPatch 更新，再执行本地修复逻辑
-        [WRFeatureManager syncFeature:[GYUICallback callbackWithSuccess:^(id data) {
-            [self tryToFixWithLocalLogic];
-            [self didFinishBootingProtection]
-            if (completion) completion();
-        } withError:^(NSError *error) {
-            [self tryToFixWithLocalLogic];
-            if (completion) completion();
-        }]];
-    }
+    // 执行本地修复逻辑
+    [self tryToFixWithLocalLogic];
+    [self didFinishBootingProtection];
 }
 
 - (void)tryToFixWithLocalLogic {
@@ -154,11 +142,11 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
         }
     }
     
-    NSLog(@"recoverFromContinuousCrash finished, files at home:[%@]\nDocuments:[%@]\nLibrary:[%@]\ntmp:[%@]",
-          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[GYFileUtils homeDirectoryPath] error:nil],
-          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[GYFileUtils documentDirectoryPath] error:nil],
-          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[GYFileUtils LibraryDirectoryPath] error:nil],
-          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[GYFileUtils tempDirectoryPath] error:nil]);
+    NSLog(@"recoverFromContinuousCrash finished, files at home:[%@]\nDocuments:[%@]\nLibrary:[%@]\nCaches:[%@]",
+          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:NSHomeDirectory() error:nil],
+          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:documentsDirectory error:nil],
+          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:libraryDirectory error:nil],
+          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:cachesDirectory error:nil]);
 }
 
 #pragma mark - Method Swizzling

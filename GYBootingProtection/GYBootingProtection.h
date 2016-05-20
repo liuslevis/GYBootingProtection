@@ -7,10 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-void (^Logger)(NSString *log);
+
 
 typedef BOOL (^BoolCompletionBlock)(void);
-typedef void (^FixBlock)(BoolCompletionBlock);
+typedef void (^RepairBlock)(BoolCompletionBlock);
 typedef void (^ReportBlock)(NSInteger crashCounts);
 
 /**
@@ -29,11 +29,10 @@ typedef void (^ReportBlock)(NSInteger crashCounts);
  * @return (BOOL)completion 的返回值，当不需要修复且 completion 有定义时；
  *         NO 在需要修复时或者其他情况
  */
-+ (BOOL)launchContinuousCrashProtectWithReportBlock:(ReportBlock)reportBlock fixBlock:(FixBlock)fixBlock completion:(BoolCompletionBlock)completion;
++ (BOOL)launchContinuousCrashProtectWithReportBlock:(ReportBlock)reportBlock repairBlock:(RepairBlock)repairBlock completion:(BoolCompletionBlock)completion;
 // 启动连续 crash 计数
 + (void)setCrashCount:(NSInteger)count;
 + (NSInteger)crashCount;
-+ (void)addCrashCountIfNeeded; // 增加计数，如果在启动后短时间内 crash
 // 是否正在修复
 + (BOOL)isFixingCrash;
 // 设置日志回调函数

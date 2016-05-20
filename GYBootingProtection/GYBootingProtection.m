@@ -8,6 +8,8 @@
 #import "GYBootingProtection.h"
 #import <QuartzCore/QuartzCore.h>
 
+void (^Logger)(NSString *log);
+
 static NSString *const kStartupCrashForTest = @"StartupCrashForTest"; // 尝试制造启动 crash 彩蛋
 static NSString *const kContinuousCrashOnLaunchCounterKey = @"ContinuousCrashOnLaunchCounter";
 static NSString *const kContinuousCrashFixingKey = @"ContinuousCrashFixing"; // 是否正在修复
@@ -19,10 +21,10 @@ static CFTimeInterval g_startTick; // 记录启动时刻
 @implementation GYBootingProtection
 
 + (BOOL)launchContinuousCrashProtectWithReportBlock:(ReportBlock)reportBlock
-                                           fixBlock:(FixBlock)fixBlock
+                                        repairBlock:(RepairBlock)repairBlock
                                          completion:(BoolCompletionBlock)completion
 {
-    NSAssert(fixBlock, @"fixBlock is nil!");
+    NSAssert(repairBlock, @"repairBlock is nil!");
     if (Logger) Logger(@"GYBootingProtection: Launch continuous crash report");
     [self setIsFixing:NO];
     
@@ -32,6 +34,9 @@ static CFTimeInterval g_startTick; // 记录启动时刻
         if (Logger) Logger([NSString stringWithFormat:@"GYBootingProtection: App has continuously crashed for %@ times. Now synchronize uploading crash report and begin fixing procedure.", @(launchCrashes)]);
         if (reportBlock) reportBlock(launchCrashes);
     }
+    
+    [self setCrashCount:[self crashCount]+1];
+
 
     // 记录启动时刻，用于计算启动连续 crash
     g_startTick = CACurrentMediaTime();
@@ -47,15 +52,15 @@ static CFTimeInterval g_startTick; // 记录启动时刻
     if (launchCrashes >= kContinuousCrashOnLaunchNeedToFix) {
         if (Logger) Logger(@"need to repair");
         [self setIsFixing:YES];
-        if (fixBlock) {
-            fixBlock(^BOOL(){
+        if (repairBlock) {
+            repairBlock(^BOOL(){
                 [self setCrashCount:0];
                 [self setIsFixing:NO];
                 if (completion) {
-                    if (Logger) Logger(@"fixBlock will execute completion block");
+                    if (Logger) Logger(@"repairBlock will execute completion block");
                     return completion();
                 } else {
-                    if (Logger) Logger(@"fixBlock will not execute completion block (nil)");
+                    if (Logger) Logger(@"repairBlock will not execute completion block (nil)");
                     return NO;
                 }
             });
@@ -69,21 +74,6 @@ static CFTimeInterval g_startTick; // 记录启动时刻
         }
     }
     return NO;
-}
-
-+ (void)addCrashCountIfNeeded
-{
-    if (Logger) Logger(@"addCrashCountIfNeeded");
-    // 记录程序启动后快速崩溃的次数
-    CFTimeInterval runningTick = CACurrentMediaTime() - g_startTick;
-    if (Logger) Logger([NSString stringWithFormat:@"runningTick:%@, startTick:%@", @(runningTick), @(g_startTick)]);
-    if (runningTick > 0 && runningTick < kCrashOnLaunchTimeIntervalThreshold) {
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        NSInteger launchCrashes = [defaults integerForKey:kContinuousCrashOnLaunchCounterKey];
-        if (Logger) Logger([NSString stringWithFormat:@"addCrashCount: launchCrashes{%@} + 1", @(launchCrashes)]);
-        [defaults setInteger:launchCrashes + 1 forKey:kContinuousCrashOnLaunchCounterKey];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-    }
 }
 
 + (void)setIsFixing:(BOOL)isFixingCrash
