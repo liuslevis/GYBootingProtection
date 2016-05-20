@@ -8,9 +8,7 @@
 #import "AppDelegate+GYBootingProtection.h"
 #import "AppDelegate.h"
 #import "GYBootingProtection.h"
-#import <Rqd/CrashReporter.h>
 #import "UIAlertView+Blocks.h"
-#import "EXTScope.h"
 
 static NSString *const fixButtonTitle = @"修复";
 static NSString *const cancelFixButtonTitle = @"取消";
@@ -21,12 +19,17 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
 /*
  * TODO 连续闪退检测前需要执行的逻辑，如上报统计初始化
  */
-- (void)onBeforeBootingProtection {
-    [WRRqdHelper initSDK:[NSBundle mainBundle].bundleIdentifier];
-    
+- (void)onBeforeBootingProtection {    
     // 制造 crash 彩蛋
 //    [GYBootingProtection setStartupCrashForTest:YES];
     [self showAlertForCreateCrashIfNeeded];
+}
+
+/*
+ * TODO 修复完成后的逻辑，比如退出登录
+ */
+- (void)didFinishBootingProtection {
+
 }
 
 /**
@@ -109,35 +112,53 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
 
 - (void)tryToFixContinuousCrash:(void(^)(void))completion
 {
-    GYTips *tips = [GYTips tipsWithView:self.window];
-    [tips showLoading:@""];
+    BOOL checkJSPatch = NO;
     
-    // 未登录执行本地修复逻辑
-    if (![[WRLoginManager shareInstance] isLogined]) {
-        [tips hideLoading];
+    if (!checkJSPatch) {
         [self tryToFixWithLocalLogic];
-        if (completion) completion();
-        return;
+        [self didFinishBootingProtection]
+    } else {
+        // 先拉检查 JSPatch 更新，再执行本地修复逻辑
+        [WRFeatureManager syncFeature:[GYUICallback callbackWithSuccess:^(id data) {
+            [self tryToFixWithLocalLogic];
+            [self didFinishBootingProtection]
+            if (completion) completion();
+        } withError:^(NSError *error) {
+            [self tryToFixWithLocalLogic];
+            if (completion) completion();
+        }]];
     }
-    
-    // 已登录先拉取 JSPatch，在执行本地修复逻辑
-    [WRFeatureManager syncFeature:[GYUICallback callbackWithSuccess:^(id data) {
-        [tips hideLoading];
-        [self tryToFixWithLocalLogic];
-        if (completion) completion();
-    } withError:^(NSError *error) {
-        [tips hideLoading];
-        [self tryToFixWithLocalLogic];
-        if (completion) completion();
-    }]];
 }
 
 - (void)tryToFixWithLocalLogic {
-    // 删除所有文件
-    [WRStorage recoverFromContinuousCrash];
+    // 删除Document Library Caches所有文件
+    NSString *documentsDirectory = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+    NSString *libraryDirectory = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) firstObject];
+    NSString *cachesDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) firstObject];
+
+    NSArray *filePathsToRemove = @[documentsDirectory, libraryDirectory, cachesDirectory];
+    NSFileManager *fileMgr = [NSFileManager defaultManager];
+    for (NSString *filePath in filePathsToRemove) {
+        if ([fileMgr fileExistsAtPath:filePath]) {
+            NSArray *subFileArray = [fileMgr contentsOfDirectoryAtPath:filePath error:nil];
+            for (NSString *subFileName in subFileArray) {
+                NSString *subFilePath = [filePath stringByAppendingPathComponent:subFileName];
+                if ([fileMgr removeItemAtPath:subFilePath error:nil]) {
+                    NSLog(@"removed file path:%@", subFilePath);
+                } else {
+                    NSLog(@"failed to remove file path:%@", subFilePath);
+                }
+            }
+        } else {
+            NSLog(@"failed to remove non-existing file path:%@", filePath);
+        }
+    }
     
-    // Fix 完成后清除登录状态
-    [[WRLoginManager shareInstance] logout];
+    NSLog(@"recoverFromContinuousCrash finished, files at home:[%@]\nDocuments:[%@]\nLibrary:[%@]\ntmp:[%@]",
+          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[GYFileUtils homeDirectoryPath] error:nil],
+          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[GYFileUtils documentDirectoryPath] error:nil],
+          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[GYFileUtils LibraryDirectoryPath] error:nil],
+          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[GYFileUtils tempDirectoryPath] error:nil]);
 }
 
 #pragma mark - Method Swizzling
