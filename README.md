@@ -4,7 +4,7 @@ A tool for detecting and repairting continuous launch crash of iOS App
 ## 说明
 ### 引入项目
 
-1. 在 Xcode 项目中引入 `GYBootingProtection.m` `GYBootingProtection.h` `AppDelegate+GYBootingProtection.h` `AppDelegate+GYBootingProtection.m`
+1. 在 Xcode 项目中引入 `src` 中的文件： `GYBootingProtection.m` `GYBootingProtection.h` `AppDelegate+GYBootingProtection.h` `AppDelegate+GYBootingProtection.m` `UIAlertView+Block.h` `UIAlertView+Block.m`
 
 2. 在 `AppDelegate+GYBootingProtection.m` 的 `onBeforeBootingProtection` 方法中添加检测前需要执行的代码，比如设置crash上报：
 
