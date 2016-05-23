@@ -11,7 +11,7 @@
 
 static NSString *const makeCrashAlertTitle = @"制造一个 Crash ？";
 static NSString *const fixCrashAlertTitle = @"提示";
-static NSString *const fixButtonTitle = @"修复";
+static NSString *const fixCrashButtonTitle = @"修复";
 static NSString *const cancelButtonTitle = @"取消";
 static NSString *const createCrashButtonTitle = @"制造Crash!";
 
@@ -75,7 +75,7 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:cancelButtonTitle style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
         if (completion) completion();
     }];
-    UIAlertAction *okAction = [UIAlertAction actionWithTitle:fixButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:fixCrashButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         [self tryToFixContinuousCrash:^void{
             if (completion) completion();
         }];
