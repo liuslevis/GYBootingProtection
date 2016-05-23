@@ -21,23 +21,40 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
  * 连续闪退检测前需要执行的逻辑，如上报统计初始化
  */
 - (void)onBeforeBootingProtection {
-    // TODO
+
+#pragma mark TODO
     
-    // 制造 crash 彩蛋
+    [GYBootingProtection setLogger:^(NSString *msg) {
+        // 设置Logger
+        NSLog(@"%@", msg);
+    }];
+    
+    [GYBootingProtection setReportBlock:^(NSInteger crashCounts) {
+        // crash 上报逻辑
+    }];
+    
+    // 彩蛋: 弹 Tips 询问是否制造 crash
     [GYBootingProtection setStartupCrashForTest:YES];
     [self showAlertForCreateCrashIfNeeded];
 }
 
-- (void)onBootingProtection {
-
-}
-
 /*
- * 修复完成后的逻辑，比如退出登录
+ * 修复逻辑，如删除文件
  */
-- (void)didFinishBootingProtection {
-    // TODO
+- (void)onBootingProtectionWithCompletion:(BoolCompletionBlock)completion {
+
+#pragma mark TODO
+
+    // TODO 可先检查 JSPatch 更新
+    
+    // 删除 Documents Library Caches 目录下所有文件
+     [GYBootingProtection deleteAllFilesUnderDocumentsLibraryCaches];
+    
+    // 正常启动流程
+    if (completion) completion();
 }
+
+#pragma mark - Method Swizzling
 
 /**
  * 连续闪退检测逻辑，Method Swizzle 了原来 didFinishLaunch。
@@ -48,22 +65,14 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
     [self onBeforeBootingProtection];
     
     /* ------- 启动连续闪退保护 ------- */
-    [GYBootingProtection setLogger:^(NSString *msg) {
-        // 设置Logger
-        NSLog(@"%@", msg);
-    }];
-    [GYBootingProtection setReportBlock:^(NSInteger crashCounts) {
-        
-    }];
+    
     [GYBootingProtection setBoolCompletionBlock:^BOOL{
-        // 正常启动逻辑
+        // 原 didFinishLaunch 正常启动流程
         return [self swizzled_application:application didFinishLaunchingWithOptions:launchOptions];
     }];
-    
-    RepairBlock repairBlock = ^void(BoolCompletionBlock completion) {
-        // 修复逻辑
+    [GYBootingProtection setRepairBlock:^(BoolCompletionBlock completion) {
         [self showAlertForFixContinuousCrashOnCompletion:completion];
-    };
+    }];
     return [GYBootingProtection launchContinuousCrashProtect];
 }
 
@@ -80,8 +89,9 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
         if (completion) completion();
     }];
     UIAlertAction *okAction = [UIAlertAction actionWithTitle:fixCrashButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [self tryToFixContinuousCrash:^void{
-            if (completion) completion();
+        [self tryToFixContinuousCrash:^BOOL {
+            if (completion) return completion();
+            return YES;
         }];
     }];
     [alertController addAction:okAction];
@@ -111,44 +121,9 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
     }
 }
 
-- (void)tryToFixContinuousCrash:(void(^)(void))completion
+- (void)tryToFixContinuousCrash:(BoolCompletionBlock)completion
 {
-    // TODO 可先检查 JSPatch 更新
-    
-    // 执行本地修复逻辑
-    [self tryToFixWithLocalLogic];
-    [self didFinishBootingProtection];
-}
-
-- (void)tryToFixWithLocalLogic {
-    // 删除Document Library Caches所有文件
-    NSString *documentsDirectory = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
-    NSString *libraryDirectory = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) firstObject];
-    NSString *cachesDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) firstObject];
-
-    NSArray *filePathsToRemove = @[documentsDirectory, libraryDirectory, cachesDirectory];
-    NSFileManager *fileMgr = [NSFileManager defaultManager];
-    for (NSString *filePath in filePathsToRemove) {
-        if ([fileMgr fileExistsAtPath:filePath]) {
-            NSArray *subFileArray = [fileMgr contentsOfDirectoryAtPath:filePath error:nil];
-            for (NSString *subFileName in subFileArray) {
-                NSString *subFilePath = [filePath stringByAppendingPathComponent:subFileName];
-                if ([fileMgr removeItemAtPath:subFilePath error:nil]) {
-                    NSLog(@"removed file path:%@", subFilePath);
-                } else {
-                    NSLog(@"failed to remove file path:%@", subFilePath);
-                }
-            }
-        } else {
-            NSLog(@"failed to remove non-existing file path:%@", filePath);
-        }
-    }
-    
-    NSLog(@"recoverFromContinuousCrash finished, files at home:[%@]\nDocuments:[%@]\nLibrary:[%@]\nCaches:[%@]",
-          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:NSHomeDirectory() error:nil],
-          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:documentsDirectory error:nil],
-          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:libraryDirectory error:nil],
-          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:cachesDirectory error:nil]);
+    [self onBootingProtectionWithCompletion:completion];
 }
 
 #pragma mark - Method Swizzling

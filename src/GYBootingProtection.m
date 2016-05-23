@@ -146,4 +146,35 @@ static CFTimeInterval g_startTick; // 记录启动时刻
     return ret;
 }
 
++ (void)deleteAllFilesUnderDocumentsLibraryCaches {
+    
+    NSString *documentsDirectory = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+    NSString *libraryDirectory = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) firstObject];
+    NSString *cachesDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) firstObject];
+    
+    NSArray *filePathsToRemove = @[documentsDirectory, libraryDirectory, cachesDirectory];
+    NSFileManager *fileMgr = [NSFileManager defaultManager];
+    for (NSString *filePath in filePathsToRemove) {
+        if ([fileMgr fileExistsAtPath:filePath]) {
+            NSArray *subFileArray = [fileMgr contentsOfDirectoryAtPath:filePath error:nil];
+            for (NSString *subFileName in subFileArray) {
+                NSString *subFilePath = [filePath stringByAppendingPathComponent:subFileName];
+                if ([fileMgr removeItemAtPath:subFilePath error:nil]) {
+                    NSLog(@"removed file path:%@", subFilePath);
+                } else {
+                    NSLog(@"failed to remove file path:%@", subFilePath);
+                }
+            }
+        } else {
+            NSLog(@"failed to remove non-existing file path:%@", filePath);
+        }
+    }
+    
+    NSLog(@"recoverFromContinuousCrash finished, files at home:[%@]\nDocuments:[%@]\nLibrary:[%@]\nCaches:[%@]",
+          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:NSHomeDirectory() error:nil],
+          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:documentsDirectory error:nil],
+          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:libraryDirectory error:nil],
+          [[NSFileManager defaultManager] contentsOfDirectoryAtPath:cachesDirectory error:nil]);
+}
+
 @end
