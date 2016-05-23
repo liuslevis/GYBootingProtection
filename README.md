@@ -4,7 +4,7 @@ A tool for detecting and repairting continuous launch crash of iOS App
 ## 说明
 ### 引入项目
 
-1. 将 `src` 目录下所有文件拖拽到你的 Xcode 项目（如果你已经在项目中使用了 Ryan Maxwell 的 `UIAlertView+Blocks`，则可以删除 `src` 目录下对应的`UIAlertView+Blocks.m` `UIAlertView+Blocks.h` 文件）
+1. 将 `src` 目录下所有文件拖拽到你的 Xcode 项目
 
 2. 在 `AppDelegate+GYBootingProtection.m` 的 `onBeforeBootingProtection` 方法中添加检测前需要执行的代码，比如设置crash上报：
 
