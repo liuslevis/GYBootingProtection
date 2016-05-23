@@ -57,7 +57,7 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
 #pragma mark - Method Swizzling
 
 /**
- * 连续闪退检测逻辑，Method Swizzle 了原来 didFinishLaunch。
+ * 连续闪退检测逻辑，Method Swizzle 了原来 didFinishLaunch
  * 如果检测到连续闪退，提示用户进行修复
  */
 - (BOOL)swizzled_application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
