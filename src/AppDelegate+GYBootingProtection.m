@@ -38,18 +38,21 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
     [self showAlertForCreateCrashIfNeeded];
 }
 
+
 /*
  * 修复逻辑，如删除文件
  */
-- (void)onBootingProtectionWithCompletion:(BoolCompletionBlock)completion {
-
+- (void)onBootingProtection {
 #pragma mark TODO
-
     // TODO 可先检查 JSPatch 更新
     
     // 删除 Documents Library Caches 目录下所有文件
-     [GYBootingProtection deleteAllFilesUnderDocumentsLibraryCaches];
-    
+    // [GYBootingProtection deleteAllFilesUnderDocumentsLibraryCaches];
+}
+
+- (void)onBootingProtectionWithCompletion:(BoolCompletionBlock)completion {
+    [self onBootingProtection];
+#pragma mark TODO 如果需要异步修复，在完成后调用 completion
     // 正常启动流程
     if (completion) completion();
 }
