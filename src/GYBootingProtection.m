@@ -9,6 +9,9 @@
 #import <QuartzCore/QuartzCore.h>
 
 void (^Logger)(NSString *log);
+ReportBlock reportBlock;
+RepairBlock repairBlock;
+BoolCompletionBlock boolCompletionBlock;
 
 static NSString *const kStartupCrashForTest = @"StartupCrashForTest"; // 尝试制造启动 crash 彩蛋
 static NSString *const kContinuousCrashOnLaunchCounterKey = @"ContinuousCrashOnLaunchCounter";
@@ -20,9 +23,7 @@ static CFTimeInterval g_startTick; // 记录启动时刻
 
 @implementation GYBootingProtection
 
-+ (BOOL)launchContinuousCrashProtectWithReportBlock:(ReportBlock)reportBlock
-                                        repairBlock:(RepairBlock)repairBlock
-                                         completion:(BoolCompletionBlock)completion
++ (BOOL)launchContinuousCrashProtect
 {
     NSAssert(repairBlock, @"repairBlock is nil!");
     if (Logger) Logger(@"GYBootingProtection: Launch continuous crash report");
@@ -56,9 +57,9 @@ static CFTimeInterval g_startTick; // 记录启动时刻
             repairBlock(^BOOL(){
                 [self setCrashCount:0];
                 [self setIsFixing:NO];
-                if (completion) {
+                if (boolCompletionBlock) {
                     if (Logger) Logger(@"repairBlock will execute completion block");
-                    return completion();
+                    return boolCompletionBlock();
                 } else {
                     if (Logger) Logger(@"repairBlock will not execute completion block (nil)");
                     return NO;
@@ -68,9 +69,9 @@ static CFTimeInterval g_startTick; // 记录启动时刻
     } else {
         // 正常流程，无需修复
         if (Logger) Logger(@"need no repair");
-        if (completion) {
+        if (boolCompletionBlock) {
             if (Logger) Logger(@"will execute completion block");
-            return completion();
+            return boolCompletionBlock();
         }
     }
     return NO;
@@ -110,6 +111,22 @@ static CFTimeInterval g_startTick; // 记录启动时刻
 {
     Logger = [logger copy];
 }
+
++ (void)setReportBlock:(ReportBlock)block
+{
+    reportBlock = block;
+}
+
++ (void)setRepairBlock:(RepairBlock)block
+{
+    repairBlock = block;
+}
+
++ (void)setBoolCompletionBlock:(BoolCompletionBlock)block
+{
+    boolCompletionBlock = block;
+}
+
 
 + (void)setStartupCrashForTest:(BOOL)isOn
 {

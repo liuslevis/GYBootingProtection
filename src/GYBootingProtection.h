@@ -29,14 +29,19 @@ typedef void (^ReportBlock)(NSInteger crashCounts);
  * @return (BOOL)completion 的返回值，当不需要修复且 completion 有定义时；
  *         NO 在需要修复时或者其他情况
  */
-+ (BOOL)launchContinuousCrashProtectWithReportBlock:(ReportBlock)reportBlock repairBlock:(RepairBlock)repairBlock completion:(BoolCompletionBlock)completion;
++ (BOOL)launchContinuousCrashProtect;
 // 启动连续 crash 计数
 + (void)setCrashCount:(NSInteger)count;
 + (NSInteger)crashCount;
 // 是否正在修复
 + (BOOL)isFixingCrash;
-// 设置日志回调函数
+// 设置日志逻辑
 + (void)setLogger:(void (^)(NSString *))logger;
+// 设置上报逻辑
++ (void)setReportBlock:(ReportBlock)reportBlock;
+// 设置修复逻辑
++ (void)setRepairBlock:(RepairBlock)repairtBlock;
++ (void)setBoolCompletionBlock:(BoolCompletionBlock)boolCompletionBlock;
 // 测试彩蛋开关：是否制造启动 crash
 + (void)setStartupCrashForTest:(BOOL)isOn;
 // 是否显示测试彩蛋（需要修复时不显示）

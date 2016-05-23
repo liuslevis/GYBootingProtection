@@ -28,6 +28,10 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
     [self showAlertForCreateCrashIfNeeded];
 }
 
+- (void)onBootingProtection {
+
+}
+
 /*
  * 修复完成后的逻辑，比如退出登录
  */
@@ -48,19 +52,19 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
         // 设置Logger
         NSLog(@"%@", msg);
     }];
+    [GYBootingProtection setReportBlock:^(NSInteger crashCounts) {
+        
+    }];
+    [GYBootingProtection setBoolCompletionBlock:^BOOL{
+        // 正常启动逻辑
+        return [self swizzled_application:application didFinishLaunchingWithOptions:launchOptions];
+    }];
+    
     RepairBlock repairBlock = ^void(BoolCompletionBlock completion) {
         // 修复逻辑
         [self showAlertForFixContinuousCrashOnCompletion:completion];
     };
-    ReportBlock reportBlock = ^void(NSInteger crashCounts) {
-        // TODO 上报逻辑
-        
-    };
-    BoolCompletionBlock completion = ^BOOL() {
-        // 正常启动逻辑
-        return [self swizzled_application:application didFinishLaunchingWithOptions:launchOptions];
-    };
-    return [GYBootingProtection launchContinuousCrashProtectWithReportBlock:reportBlock repairBlock:repairBlock completion:completion];
+    return [GYBootingProtection launchContinuousCrashProtect];
 }
 
 #pragma mark - 修复启动连续 Crash 逻辑
