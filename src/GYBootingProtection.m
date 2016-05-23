@@ -121,6 +121,9 @@ static CFTimeInterval g_startTick; // 记录启动时刻
 
 + (BOOL)startupCrashForTest
 {
+    if ([GYBootingProtection crashCount] >= kContinuousCrashOnLaunchNeedToFix) {
+        return NO;
+    }
     BOOL ret = [[NSUserDefaults standardUserDefaults] boolForKey:kStartupCrashForTest];
     if (Logger) Logger([NSString stringWithFormat:@"startupCrashForTest:%@", @(ret)]);
     return ret;

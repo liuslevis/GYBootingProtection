@@ -39,5 +39,6 @@ typedef void (^ReportBlock)(NSInteger crashCounts);
 + (void)setLogger:(void (^)(NSString *))logger;
 // 测试彩蛋开关：是否制造启动 crash
 + (void)setStartupCrashForTest:(BOOL)isOn;
+// 是否显示测试彩蛋（需要修复时不显示）
 + (BOOL)startupCrashForTest;
 @end

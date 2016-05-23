@@ -25,7 +25,9 @@
 }
 
 - (void)pressedButton {
-    abort();
+    // make crash
+    id str = @"demo";
+    [str numberOfRowsInSection:0];
 }
 
 @end

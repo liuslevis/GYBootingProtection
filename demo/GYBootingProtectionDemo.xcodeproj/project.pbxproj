@@ -15,7 +15,6 @@
 		3E7A44701CEF3DA100879C70 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3E7A446E1CEF3DA100879C70 /* LaunchScreen.storyboard */; };
 		3EAA19581CEF491B0066E50D /* AppDelegate+GYBootingProtection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EAA19531CEF491B0066E50D /* AppDelegate+GYBootingProtection.m */; };
 		3EAA19591CEF491B0066E50D /* GYBootingProtection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EAA19551CEF491B0066E50D /* GYBootingProtection.m */; };
-		3EAA195A1CEF491B0066E50D /* UIAlertView+Blocks.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EAA19571CEF491B0066E50D /* UIAlertView+Blocks.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,8 +32,6 @@
 		3EAA19531CEF491B0066E50D /* AppDelegate+GYBootingProtection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "AppDelegate+GYBootingProtection.m"; path = "../../src/AppDelegate+GYBootingProtection.m"; sourceTree = "<group>"; };
 		3EAA19541CEF491B0066E50D /* GYBootingProtection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GYBootingProtection.h; path = ../../src/GYBootingProtection.h; sourceTree = "<group>"; };
 		3EAA19551CEF491B0066E50D /* GYBootingProtection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GYBootingProtection.m; path = ../../src/GYBootingProtection.m; sourceTree = "<group>"; };
-		3EAA19561CEF491B0066E50D /* UIAlertView+Blocks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIAlertView+Blocks.h"; path = "../../src/UIAlertView+Blocks.h"; sourceTree = "<group>"; };
-		3EAA19571CEF491B0066E50D /* UIAlertView+Blocks.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIAlertView+Blocks.m"; path = "../../src/UIAlertView+Blocks.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,8 +84,6 @@
 				3EAA19531CEF491B0066E50D /* AppDelegate+GYBootingProtection.m */,
 				3EAA19541CEF491B0066E50D /* GYBootingProtection.h */,
 				3EAA19551CEF491B0066E50D /* GYBootingProtection.m */,
-				3EAA19561CEF491B0066E50D /* UIAlertView+Blocks.h */,
-				3EAA19571CEF491B0066E50D /* UIAlertView+Blocks.m */,
 				3E7A44611CEF3DA100879C70 /* main.m */,
 			);
 			name = "Supporting Files";
@@ -167,7 +162,6 @@
 				3EAA19581CEF491B0066E50D /* AppDelegate+GYBootingProtection.m in Sources */,
 				3E7A44681CEF3DA100879C70 /* ViewController.m in Sources */,
 				3E7A44651CEF3DA100879C70 /* AppDelegate.m in Sources */,
-				3EAA195A1CEF491B0066E50D /* UIAlertView+Blocks.m in Sources */,
 				3E7A44621CEF3DA100879C70 /* main.m in Sources */,
 				3EAA19591CEF491B0066E50D /* GYBootingProtection.m in Sources */,
 			);

@@ -6,12 +6,13 @@
 //
 
 #import "AppDelegate+GYBootingProtection.h"
-#import "UIAlertView+Blocks.h"
 #import <objc/runtime.h>
 #import "GYBootingProtection.h"
 
+static NSString *const makeCrashAlertTitle = @"制造一个 Crash ？";
+static NSString *const fixCrashAlertTitle = @"提示";
 static NSString *const fixButtonTitle = @"修复";
-static NSString *const cancelFixButtonTitle = @"取消";
+static NSString *const cancelButtonTitle = @"取消";
 static NSString *const createCrashButtonTitle = @"制造Crash!";
 
 @implementation AppDelegate (GYBootingProtection)
@@ -69,24 +70,20 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
  */
 - (void)showAlertForFixContinuousCrashOnCompletion:(BoolCompletionBlock)completion {
     NSLog(@"Detect continuous crash %ld times. Prompt user to fix.",  (long)[GYBootingProtection crashCount]);
-    NSString *title = [NSString stringWithFormat:@"提示"];
     NSString *message = @"检测到应用可能已损坏，是否尝试修复？";
-    [UIAlertView showWithTitle:title
-                       message:message
-             cancelButtonTitle:cancelFixButtonTitle
-             otherButtonTitles:@[fixButtonTitle]
-                      tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex)
-     {
-         if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:cancelFixButtonTitle]) {
-             if (completion) completion();
-             
-         } else if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:fixButtonTitle]) {
-             [self tryToFixContinuousCrash:^void{
-                 if (completion) completion();
-             }];
-         }
-         
-     }];
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:fixCrashAlertTitle message:message preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:cancelButtonTitle style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        if (completion) completion();
+    }];
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:fixButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self tryToFixContinuousCrash:^void{
+            if (completion) completion();
+        }];
+    }];
+    [alertController addAction:okAction];
+    [alertController addAction:cancelAction];
+    [self.window makeKeyAndVisible];
+    [self.window.rootViewController presentViewController:alertController animated:YES completion:nil];
 }
 
 /**
@@ -94,18 +91,19 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
  */
 - (void)showAlertForCreateCrashIfNeeded {
     if ([GYBootingProtection startupCrashForTest]) {
-        NSString *title = @"制造一个 Crash ？";
         NSString *message = [NSString stringWithFormat:@"已经连续 crash 了%ld 次\n可以在设置彩蛋取消这个提示", [GYBootingProtection crashCount]];
-        [UIAlertView showWithTitle:title
-                           message:message
-                 cancelButtonTitle:cancelFixButtonTitle
-                 otherButtonTitles:@[createCrashButtonTitle]
-                          tapBlock:^(UIAlertView *alertView, NSInteger buttonIndex)
-         {
-             if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:createCrashButtonTitle]) {
-                 abort();
-             }
-         }];
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:makeCrashAlertTitle message:message preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:cancelButtonTitle style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        }];
+        UIAlertAction *okAction = [UIAlertAction actionWithTitle:createCrashButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            // create crash
+            id a = @"demo";
+            [a numberOfRowsInSection:0];
+        }];
+        [alertController addAction:okAction];
+        [alertController addAction:cancelAction];
+        [self.window makeKeyAndVisible];
+        [self.window.rootViewController presentViewController:alertController animated:YES completion:nil];
     }
 }
 
