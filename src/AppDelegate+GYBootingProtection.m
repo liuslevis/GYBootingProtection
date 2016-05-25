@@ -14,6 +14,7 @@ static NSString *const fixCrashAlertTitle = @"提示";
 static NSString *const fixCrashButtonTitle = @"修复";
 static NSString *const cancelButtonTitle = @"取消";
 static NSString *const createCrashButtonTitle = @"制造Crash!";
+static NSString *const mainStoryboardInfoKey = @"UIMainStoryboardFile";
 
 @implementation AppDelegate (GYBootingProtection)
 
@@ -70,6 +71,7 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
     /* ------- 启动连续闪退保护 ------- */
     
     [GYBootingProtection setBoolCompletionBlock:^BOOL{
+
         // 原 didFinishLaunch 正常启动流程
         return [self swizzled_application:application didFinishLaunchingWithOptions:launchOptions];
     }];
@@ -99,8 +101,8 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
     }];
     [alertController addAction:okAction];
     [alertController addAction:cancelAction];
-    [self.window makeKeyAndVisible];
-    [self.window.rootViewController presentViewController:alertController animated:YES completion:nil];
+
+    [self presentAlertViewController:alertController];
 }
 
 /**
@@ -119,9 +121,30 @@ static NSString *const createCrashButtonTitle = @"制造Crash!";
         }];
         [alertController addAction:okAction];
         [alertController addAction:cancelAction];
-        [self.window makeKeyAndVisible];
-        [self.window.rootViewController presentViewController:alertController animated:YES completion:nil];
+
+        [self presentAlertViewController:alertController];
     }
+}
+
+/** 
+ * 对于代码构建 UI 的项目一般在 didFinishLaunch 方法中初始化 window，
+ * 想在 swizzling 方法中 present alertController 需要自己先初始化 window 并提供一个 rootViewController
+ */
+- (void)presentAlertViewController:(UIAlertController *)alertController {
+    if (![self hasStoryboardInfo]) {
+        self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        self.window.rootViewController = [[UIViewController alloc] init];
+    }
+    [self.window makeKeyAndVisible];
+    [self.window.rootViewController presentViewController:alertController animated:YES completion:nil];
+}
+
+/** 
+ * 判断项目是否是用 info.plist 配置 storyboard 的，
+ * 是的话就不需要手动初始化 window 和 rootViewController
+ */
+- (BOOL)hasStoryboardInfo {
+    return [[NSBundle mainBundle] objectForInfoDictionaryKey:mainStoryboardInfoKey];
 }
 
 - (void)tryToFixContinuousCrash:(BoolCompletionBlock)completion
