@@ -68,6 +68,11 @@ static NSString *const mainStoryboardInfoKey = @"UIMainStoryboardFile";
     
     [self onBeforeBootingProtection];
     
+    // only protect tapping icon launch
+    if (launchOptions != nil) {
+        return [self swizzled_application:application didFinishLaunchingWithOptions:launchOptions];
+    }
+
     /* ------- 启动连续闪退保护 ------- */
     
     [GYBootingProtection setBoolCompletionBlock:^BOOL{
