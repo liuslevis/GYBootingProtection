@@ -16,12 +16,13 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-
+    NSLog(@"------------ Root view did load ------------");
     _button = [[UIButton alloc] initWithFrame:CGRectMake(50, 50, 200, 30)];
     [self.button setTitle:@"Make a crash" forState:UIControlStateNormal];
     [self.button setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
     [self.button addTarget:self action:@selector(pressedButton) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.button];
+    // [self pressedButton];
 }
 
 - (void)pressedButton {
